@@ -1,32 +1,32 @@
 
 $SIZES     PD=-70
-$PROBLEM   Turnover model for CRP
+$PROBLEM   Coupled tumor size-CRP turnover model
 
 $INPUT  ID       ; Patient number	
         OCC      ; Treatment cycle	
         DAY      ; Day within cycle
-        TIME     ; Time of CRP measurment		
+        TIME     ; Time of CRP measurement		
         EVID     ; Event identifier	
         MDV      ; Missing dependent variable	
-        DV	     ; CRP (log-transformed)
-        CMT		 ; Compartment identifier (CRP, Tumour)
+        DV	 ; CRP (log-transformed)
+        CMT	 ; Compartment identifier (CRP, Tumour)
         FLAGCRP  ; FLag for BLQ and ULOQ value for CRP
         BLIL6	 ; Baseline interleukin-6
         NEWBLIL6 ; Baseline interleukin-6, missing value imputed by median		
-        SMOK	; Smoking status		
-        STAGE	; Disease stage					
-        BLSD    ; Baseline tumour size
-        IGR	    ; Individual tumour growth rate
-        IBETA	; Individual drug effect
-        ITBASE	; Individual estimated baseline tumour size
-        ILAMBDA	; Individual drug resistance rate constant
-        SEGR	; Individual standard error of tumour growth rate
-        SEBETA	; Individual standard error of drug effect
+        SMOK	 ; Smoking status		
+        STAGE	 ; Disease stage					
+        BLSD     ; Baseline tumor size
+        IGR	 ; Individual tumour growth rate
+        IBETA	 ; Individual drug effect
+        ITBASE	 ; Individual estimated baseline tumor size
+        ILAMBDA	 ; Individual drug resistance rate constant
+        SEGR	 ; Individual standard error of tumor growth rate
+        SEBETA	 ; Individual standard error of drug effect
         SELAMBDA ; Individual standard error of resistance
-        SEERR	 ; Individual standard error of baselien tumour size
+        SEERR	 ; Individual standard error of baseline tumour size
         MAUC     ; Paclitaxel AUC per cycle
 
-$DATA  2-CRP_TGI_Model_extra_records2023-02-02.csv IGNORE=@
+$DATA  2-CRP_TGI_Model.csv IGNORE=@
 
       IGNORE=(FLAGCRP.EQ.2)        ;Exclude flagged items (BLQ)
       IGNORE=(ID.EQ.13028)         ;Patient with no CRP (all are BLQ)
@@ -47,7 +47,7 @@ $PK
 ;Covariate function: sum of diameters-exponential
 KINSUMDIA = EXP(THETA(5)*(BLSD-8.25))
 
-;Covariate function: IL6- linear
+;Covariate function: IL6-linear
 KINIL6 = ( 1 + THETA(4)*(NEWBLIL6-2.57))
 
 ;Covariate function: disease stage
@@ -76,21 +76,20 @@ KOUT   = TVKOUT*EXP(ETA(2))
 ; Baseline
 BASE = KINT/KOUT
 
-; Relationship between tumour size and Kin 			              
-TVSLP=THETA(10)
-SLP=TVSLP*EXP(ETA(7))
+; Relationship between tumor size and Kin 			              
+TVSLP =THETA(10)
+SLP   =TVSLP*EXP(ETA(7))
 
-; Tumour growth inhibition model parameters
+; Tumor growth inhibition model parameters
 GR     = IGR*EXP(ETA(3)*SEGR)
 BETA   = IBETA*EXP(ETA(4)*SEBETA)
 LAMBDA = ILAMBDA*EXP(ETA(5)*SELAMBDA)
 TBASE  = BLSD*EXP(ETA(6)*SEERR)
 
 ; Intialize compartments
-A_0(1)       = TBASE   ; Baseline tumour size
+A_0(1)       = TBASE   ; Baseline tumor size
 A_0(2)       = BASE    ; CRP (mg/L)
-A_0(3)       = TBASE   ; Baseline tumour size
-
+A_0(3)       = TBASE   ; Baseline tumor size
 
 $DES
 
@@ -102,7 +101,7 @@ DADT(1) = GR - EFF * A(1)
 KINP=KIN*SLP*(A(1)/TBASE)
 DADT(2) = (KINB+KINP)-KOUT*A(2)		; Time-course of CRP
 
-;Output of tumour size week 8 
+;Output of tumor size week 8 
  IF(T.LT.1344) SLOP2 = GR - EFF * A(1)           ; 8*7*24=1344
  IF(T.GE.1344) SLOP2 = 0                         ; 8*7*24=1344
  DADT(3) = SLOP2
