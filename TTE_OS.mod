@@ -6,13 +6,13 @@ $INPUT      ID    ; Patient number
             EVID  ; Event identifier
             DV    ; Death/Censored event
             SIM   ; Flag for simulation records
-            BLSD  ; Baseline tumour size
-            C3D1  ; CRP concnetration at cycle 3
-	          ABC3C2 ; Difference in CRP concnetration between cycle 3 and 2	
+            BLSD  ; Baseline tumor size
+            C3D1  ; CRP concentration at cycle 3
+	    ABC3C2 ; Difference in CRP concentration between cycle 3 and 2	
             LIVERLES  ; Liver lesions: Presence/absence
             LM   ; Flag for landmark time (day 42)
 
-$DATA 4-CRP_SUR_COV2023-07-31_LM.csv IGNORE=@  
+$DATA 4-CRP_SUR_COV_LM.csv IGNORE=@  
 IGNORE=(ID.EQ.13028)         ;Patient with no CRP (all are BLQ)
 IGNORE=(LM.EQ.1)             ;Patients with events before cycle 3
 
@@ -38,11 +38,11 @@ IF(LIVERLES.EQ.0) HZLIVERLES = 1  ; Most common
 IF(LIVERLES.EQ.1) HZLIVERLES = ( 1 + THETA(4))
 ;--------------------------------
 
-;[3] Difference in CRP concentration between cycel 3 and cycle 2
+;[3] Difference in CRP concentration between cycle 3 and cycle 2
 HZABC3C2= ((ABC3C2)**THETA(5))
 ;--------------------------------
 
-;[4] Baseline tumour size
+;[4] Baseline tumor size
 HZBLSD= ((BLSD)**THETA(6))
 ;--------------------------------
 HZCOV=HZC3D1*HZLIVERLES*HZABC3C2*HZBLSD
@@ -86,12 +86,12 @@ DELX = 1E-8 ; to avoid value zero of time
    ENDIF
   ENDIF
 
-$THETA  (0.0000000001,0.00009)   ; 1. LAM:Scale factor
+$THETA  (0.0000000001,0.00009)   ; 1. LAM: Scale factor
 $THETA  (0, 1.1)                 ; 2. ALPHA: Shape factor
 $THETA  (0,0.4)                  ; 3. Covariate: CRP cycle 3
 $THETA  (0,0.5)                  ; 4. Covariate: Liver lesions
-$THETA  (-0.3)         ; 5. Covariate: Difference in CRP concentration between cycel 3 and cycle 2
-$THETA  (0, 0.4)         ; 6. Covariate: Baseline tumour size
+$THETA  (-0.3)                   ; 5. Covariate: Difference in CRP concentration between cycle 3 and cycle 2
+$THETA  (0, 0.4)                 ; 6. Covariate: Baseline tumor size
 
 
 $OMEGA  0  FIX       ; IIV LAM
