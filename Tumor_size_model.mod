@@ -1,28 +1,28 @@
 $SIZES PD=-100
 
-$PROBLEM Paclitaxel AUC-driven drug-induced tumour decay
+$PROBLEM Paclitaxel AUC-driven drug-induced tumor decay
 
 $INPUT  ID       ; Patient number
         OCC      ; Treatment cycle
         DAY      ; Day within cycle
-        TIME     ; Time of tumour size measurment
-        DV       ; Tumour size (log-transformed)
-        BSL      ; Baseline tumour size
-        EVID     ; Even tidentifier
+        TIME     ; Time of tumor size measurement
+        DV       ; Tumor size (log-transformed)
+        BSL      ; Baseline tumor size
+        EVID     ; Event identifier
         MDV      ; Missing dependent variable
-        FLGIG    ; Flag for tumour size records 
+        FLGIG    ; Flag for tumor size records 
         AUC      ; Paclitaxel AUC per cycle
         SimNo    ; Simulation number (idnetifier with respect to multiple imputation)
 
 $DATA data1.csv IGNORE=I  
 IGNORE(ID.EQ.16037)
-IGNORE(FLGIG.EQ.1)    ; exclude non-tumour size records
+IGNORE(FLGIG.EQ.1)    ; exclude non-tumor size records
 IGNORE(TIME.GT.5040)
 
 $SUBROUTINES ADVAN6 TOL=5
 
 $MODEL COMP=(SD)              ;1 Sum of diameter
-       COMP=(SIZE8)           ;2 Tumour size at week 8
+       COMP=(SIZE8)           ;2 Tumor size at week 8
        
 $PK 
 " FIRST
@@ -33,7 +33,7 @@ $PK
 ; Sum of diameters     
  GR     = THETA(1) * EXP(ETA(1))         ; Growth rate
  BETA   = THETA(2) * EXP(ETA(2))         ; Drug induced decay
- BASE   = EXP(LOG(BSL)+THETA(3)*ETA(3))  ; Baseline tumour size accroding to B2 method
+ BASE   = EXP(LOG(BSL)+THETA(3)*ETA(3))  ; Baseline tumor size according to B2 method
  LAMBDA = THETA(4)*EXP(ETA(4))           ; Decline in drug effect in a cycle
  
  A_0(1) = BASE
@@ -66,6 +66,7 @@ RS8 = 100/BSL*TSIZE
  IF(A(1).GT.0) IPRED=LOG(A(1))
  W=THETA(3)
  Y=IPRED + W *EPS(1)
+
  IRES=DV-IPRED
  IWRES=IRES/W
  
