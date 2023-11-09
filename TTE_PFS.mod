@@ -3,14 +3,13 @@ $PROBLEM
 $INPUT      ID    ; Patient number
             TIME  ; Time of event
             EVID  ; Even tidentifier
-            DV    ; Progreesion/Censored event
+            DV    ; Progression or death/Censored event
             SIM   ; Flag for simulation records
             C3D1  ; CRP concentration at cycle 3
-	          ABC3C2 ; Difference in CRP concnetration between cycle 3 and 2	
+	    ABC3C2 ; Difference in CRP concnetration between cycle 3 and 2	
             LM   ; Flag for landmark time (day 42)
 
-
-$DATA      5-CRP_PFS_COV2023-08-03_LM.csv IGNORE=@ 
+$DATA      5-CRP_PFS_COV_LM.csv IGNORE=@ 
 IGNORE=(ID.EQ.13028)         ;Patient with no CRP (all are BLQ)
 IGNORE=(LM.EQ.1)             ;Patients with events before cycle 3
 
@@ -29,7 +28,7 @@ $PK
 HZC3D1= ( 1 + THETA(3)*(C3D1))
 ;--------------------------------
 
-;[2] Difference in CRP concentration between cycel 3 and cycle 2
+;[2] Difference in CRP concentration between cycle 3 and cycle 2
 HZABC3C2= ((ABC3C2)**THETA(4))
 ;--------------------------------
 
@@ -49,8 +48,7 @@ LTIM  = LOG(TIM)
 X1X    = (LTIM-MUTTP)/SDTTP
 PDF1X  = EXP(-(1/2)*((X1X)**2))/SQRT(2*PI)
 LOGPFX = ((1/(TIM*SDTTP))*PDF1X/(1-PHI(X1X))) ; lognormal baseline hazard
-DADT(1)= LOGPFX*HZCOV
-               
+DADT(1)= LOGPFX*HZCOV         
 
 $ERROR
 DELX = 1E-8 ; to avoid value zero of time
@@ -60,7 +58,6 @@ DELX = 1E-8 ; to avoid value zero of time
   CHZ = A(1)-OLDCHZ         ; Cumulative hazard 
   OLDCHZ = A(1)             ; Rename old cumulative hazard
   SUR = EXP(-CHZ)           ; Survival probability
-
 
 TIMX    = TIME+DELX
 LTIMX   = LOG(TIMX)
@@ -87,13 +84,12 @@ HAZNOW = LOGPFS*HZCOV  ; hazard for PFS
    ENDIF
   ENDIF
 
-$THETA  (0,0.9)     ; 1. standard deviation of lognormal hazard model
-$THETA  (0,9)       ; 2. mean of lognormal hazard fucntion
-$THETA  (0,0.1)    ; 3. Covariate: CRP cycle 3
-$THETA  (-0.26) ; 4. Covariate: Difference in CRP concentration between cycel 3 and cycle 2
+$THETA  (0,0.9)     ; 1. Standard deviation of lognormal hazard model
+$THETA  (0,9)       ; 2. Mean of lognormal hazard fucntion
+$THETA  (0,0.1)     ; 3. Covariate: CRP cycle 3
+$THETA  (-0.26)     ; 4. Covariate: Difference in CRP concentration between cycle 3 and cycle 2
 
 $OMEGA  0  FIX  ; 1. IIV standard deviation of lognormal hazard model
-
 
 ;Sim_start : add/remove for simulation
 ;$SIMULATION (5988566) (39978 UNIFORM) ONLYSIM NOPREDICTION SUB=100
